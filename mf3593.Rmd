@@ -1,0 +1,67 @@
+---
+title: "p8105_hw5_mf3593"
+author: "Miao Fu"
+date: "2023-11-07"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+echo = TRUE,
+message=FALSE,
+fig.width=6,
+out.width="100%")
+
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+Homicide_df=read.csv("homicide-data.csv")|>
+  janitor::clean_names()|>
+  mutate(city_state=paste0(city,",",state))
+
+homicide_unsolved=Homicide_df|>
+  mutate(
+    homicide=ifelse(disposition%in%c("Closed without arrest","Open/No arrest"),"unsolved homicides","solved homicides")
+  )|>
+  group_by(city,homicide)|>
+  summarise(unsolved=n())|>
+  filter(homicide=="unsolved homicides")
+
+homicide_count=Homicide_df|>
+  group_by(city)|>
+  summarise(total=n())|>
+  full_join(homicide_unsolved,by="city")|>
+  select(-homicide)
+
+homicide_count|>
+  filter(city=="Baltimore")|>
+  knitr::kable()
+
+baltimore=prop.test(x=1825,n=2827)|>
+  broom::tidy()|>
+  select(estimate,conf.low,conf.high)
+
+knitr::kable(baltimore)
+
+all_city=purrr::map2(homicide_count$unsolved,homicide_count$total,prop.test)
+for (i in 1:50) {
+  all_city[[i]]=broom::tidy(all_city[[i]])|>
+  select(estimate,conf.low,conf.high)
+}
+all_city_df=bind_rows(all_city)|>
+  cbind(homicide_count)|>
+  select(city,estimate,conf.low,conf.high)
+
+all_city_df|>
+  mutate(city=fct_reorder(city,estimate))|>
+  ggplot(aes(x=city,y=estimate))+
+  geom_point(stat="identity")+
+  geom_errorbar(aes(ymin=conf.low,ymax=conf.high))+
+  theme(axis.text.x=element_text(angle=45,hjust=1))
+  
+
+
+```
+The raw data has `r nrow(Homicide_df)` rows and `r ncol(Homicide_df)` columns. It contains the following variables: `r colnames(Homicide_df)`. It gives information about different types of homicides happened across 50 large U.S. cities from 2010 to 2016.
