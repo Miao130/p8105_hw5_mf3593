@@ -65,3 +65,4 @@ all_city_df|>
 
 ```
 The raw data has `r nrow(Homicide_df)` rows and `r ncol(Homicide_df)` columns. It contains the following variables: `r colnames(Homicide_df)`. It gives information about different types of homicides happened across 50 large U.S. cities from 2010 to 2016.
+
