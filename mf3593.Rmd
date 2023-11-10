@@ -10,12 +10,13 @@ knitr::opts_chunk$set(
 echo = TRUE,
 message=FALSE,
 fig.width=6,
-out.width="100%")
+out.width="90%")
 
 library(dplyr)
 library(tidyverse)
 ```
 
+### Problem 1
 ```{r}
 Homicide_df=read.csv("homicide-data.csv")|>
   janitor::clean_names()|>
@@ -64,5 +65,64 @@ all_city_df|>
 
 
 ```
+
 The raw data has `r nrow(Homicide_df)` rows and `r ncol(Homicide_df)` columns. It contains the following variables: `r colnames(Homicide_df)`. It gives information about different types of homicides happened across 50 large U.S. cities from 2010 to 2016.
+
+### Problem 2
+```{r}
+file_names=as.list(list.files("data"))|>
+  lapply(function(x)paste0("data/",x))
+files=tibble(file_name=file_names)
+
+read_data=function(file){
+  data=read.csv(file)
+  return(data)
+}
+
+
+files=files|>
+  mutate(data=purrr::map(file_names,read_data),
+         file_name=ifelse(grepl("con",pull(files,file_name)),paste0("control ",substring(file_name,10,11)),paste0("experiment ",substring(file_name,10,11))
+  ))|>
+  unnest(data)|>
+  janitor::clean_names()|>
+  rename(subject=file_name)|>
+  separate(subject,into=c("group","ID"),sep=" ")
+
+files|>pivot_longer(
+    week_1:week_8,
+    names_to="visit",
+    names_prefix="week_",
+    values_to="data"
+  )|>
+  mutate(visit=as.numeric(visit))|>
+  ggplot(aes(x=visit,y=data,group=ID,color=group))+
+  geom_point()+
+  geom_line()+
+  scale_color_manual(values=c("control"="lightblue","experiment"="pink"))+
+  theme(legend.position="bottom")+
+  labs(
+    title="Experiment Data",
+    x="Visit(weeks)",
+    y="Data Value",
+    color="Subject ID"
+  )
+  
+```
+
+### Problem 3
+
+```{r}
+sim_mean_sd=function(samp_size=30,mu,sigma=5) {
+  sim_data =
+    tibble(
+      x=rnorm(n=samp_size,mean=mu,sd=sigma)
+    )
+  
+  sim_data|>
+    summarize(
+      mu_hat=mean(x)
+    )
+}
+```
 
