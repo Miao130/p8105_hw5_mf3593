@@ -96,33 +96,52 @@ files|>pivot_longer(
     values_to="data"
   )|>
   mutate(visit=as.numeric(visit))|>
-  ggplot(aes(x=visit,y=data,group=ID,color=group))+
-  geom_point()+
+  ggplot(aes(x=visit,y=data,color=group))+
   geom_line()+
-  scale_color_manual(values=c("control"="lightblue","experiment"="pink"))+
+  facet_grid(~ID)+
   theme(legend.position="bottom")+
   labs(
     title="Experiment Data",
     x="Visit(weeks)",
     y="Data Value",
-    color="Subject ID"
+    color="Subject Group"
   )
   
 ```
 
+According to the plots, experiment group subjects have higher data values than control arm subjects. 
+
 ### Problem 3
 
 ```{r}
-sim_mean_sd=function(samp_size=30,mu,sigma=5) {
-  sim_data =
-    tibble(
-      x=rnorm(n=samp_size,mean=mu,sd=sigma)
-    )
+set.seed(1)
+
+sim_mean_p=function(samp_size=30,mu,sigma=5) {
+
+  x=rnorm(n=samp_size,mean=mu,sd=sigma)
+  result=t.test(x,mu=mu,conf.level=0.95)|>
+    broom::tidy()
   
-  sim_data|>
-    summarize(
-      mu_hat=mean(x)
-    )
+  return(tibble(mu_hat=pull(result,estimate),
+         p_value=pull(result,p.value),
+          mu_value=mu))
 }
+
+output=vector("list",5000)
+for (i in 1:5000) {
+  output[[i]]=sim_mean_p(mu=0)
+}
+sim_results=bind_rows(output)
+
+output2=vector("list",30000)
+main_output=vector("list",6)
+
+for (a in 1:6){
+  for (i in 1:5000) {
+  output2[[i]]=sim_mean_p(mu=a)
+  }
+  main_output[[a]]=bind_rows(output2)
+}
+sim_results_2=bind_rows(main_output)
 ```
 
