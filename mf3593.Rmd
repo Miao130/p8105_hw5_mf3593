@@ -152,7 +152,7 @@ sim_results_2|>
   
 ```
 
-Power increases as the effect size(true mu) increases and approximates to 1 at 6. 
+When effect size is small, power is small(close to 0). Power increases as the true mu increases and approximates to 1 at 6. 
 
 ```{r}
 results_reject=sim_results_2|>
@@ -175,4 +175,4 @@ sim_results_2|>
   theme_bw()
 ```
 
-The sample average of $\hat{\mu}$ across tests for which the null is rejected is still approximately equal to the true value of $\mu$. This is because we have large sample size and according to CLT, the mean of sample distribution will approximate the true mean. 
+The sample average of $\hat{\mu}$ across tests for which the null is rejected is still approximately equal to the true value of $\mu$ when true $\mu$ is small. As true $\mu$ increases, the sample average of $\hat{\mu}$ becomes more approximately equal to the true $\mu$. This is because when $\mu$ is small, the cases when estimate average mean is different from population mean by chance is bigger. So the average estimate of $\hat{\mu}$ of the rejected samples are abit more different from the true $\mu$. When $\mu$ is big, the sample average mean and population mean are all similar so the average estimate of $\hat{\mu}$ of the rejected samples still approximately equal to the true $\mu$.
