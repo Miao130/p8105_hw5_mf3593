@@ -142,6 +142,7 @@ sim_results_2|>
   summarise(ratio=sum(null)/n())|>
   ggplot(aes(x=mu_value,y=ratio))+
   geom_point()+
+  geom_line()+
   labs(
     title="Effect size and power",
     x="true mu",
@@ -151,30 +152,23 @@ sim_results_2|>
   
 ```
 
+Power increases as the effect size(true mu) increases and approximates to 1 at 6. 
 
 ```{r}
-sim_results_2|>
-  group_by(mu_value)|>
-  summarise(avg=mean(mu_hat))|>
-  ggplot(aes(x=mu_value,y=avg))+
-  geom_point()+
-  geom_smooth()+
-  labs(
-    title="Average estimate of mu_hat",
-    x="true mu",
-    y="Average estimate of mu_hat"
-  )+
-  theme_bw()
-
-sim_results_2|>
+results_reject=sim_results_2|>
   filter(p_value<0.05)|>
   group_by(mu_value)|>
+  summarise(avg=mean(mu_hat))
+  
+sim_results_2|>
+  group_by(mu_value)|>
   summarise(avg=mean(mu_hat))|>
-  ggplot(aes(x=mu_value,y=avg))+
+  ggplot(aes(x=mu_value,y=avg,color="all samples"))+
   geom_point()+
-  geom_smooth()+
+  geom_line()+
+  geom_point(data=results_reject,aes(y=avg,color="null_reject"))+
   labs(
-    title="Average estimate of mu_hat for rejected null",
+    title="Average estimate of mu_hat",
     x="true mu",
     y="Average estimate of mu_hat"
   )+
